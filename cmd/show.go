@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"log"
 
@@ -11,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var supportedArgs = []string{"variables", "test"}
+
 // showCmd represents the show command
 var showCmd = &cobra.Command{
 	Use:   "show",
@@ -18,10 +21,24 @@ var showCmd = &cobra.Command{
 	Long: `used to get information about a project. Could be commits, pull requests,
 project variables, etc. 
 
-gitlab-applet show --variables`,
+gitlab-applet show variables`,
+
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 1 {
+			return errors.New(color.RedString("requires exactly one argument"))
+		}
+
+		argOk := Contains(supportedArgs, args[0])
+		if !argOk {
+			return errors.New(color.RedString(`arg: "%s" not implemented
+supported arguments: %v
+			`, args[0], supportedArgs))
+		}
+		return nil
+	},
 
 	Run: func(cmd *cobra.Command, args []string) {
-		color.Cyan("Show CMD called....")
+		color.Cyan("SHOW command invoked....")
 		switch args[0] {
 		case "variables":
 			variables()
@@ -45,7 +62,7 @@ func variables() {
 	}
 
 	project := projects[0]
-	color.Green("fetching variables for project: %s ...", project.WebURL)
+	color.Cyan("fetching variables for project: %s ...", project.WebURL)
 
 	varList, _, err := GitClient.ProjectVariables.ListVariables(project.ID)
 	if err != nil {
@@ -56,21 +73,25 @@ func variables() {
 		color.Yellow("No project variables found")
 		return
 	}
+	color.Green("variables fetched!\n*******")
 
 	for _, v := range varList {
+		// a lot of our variables are base64 encoded
 		data, err := base64.StdEncoding.DecodeString(v.Value)
 		if err != nil {
-			fmt.Println(err)
+			// if err, data was not base 64, but still grab
+			fmt.Println("Key: ", v.Key)
+			fmt.Println("Value: ", v.Value)
+			color.Green("*******")
 			continue
 		}
 
-		fmt.Printf("----%v-----\n", v.Key)
-		fmt.Println(string(data))
+		fmt.Println("Key: ", v.Key)
+		fmt.Printf("Value: \n%s\n", string(data))
+		color.Green("*******")
 	}
 }
 
 func init() {
 	rootCmd.AddCommand(showCmd)
-
-	showCmd.Flags().String("item", "", "desired information (variables, commits, etc)")
 }
