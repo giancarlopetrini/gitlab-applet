@@ -11,7 +11,7 @@ Clone this repo `git clone https://github.com/giancarlopetrini/gitlab-applet` an
 * `project` project name (or close match to name)
 
 Example:  
-`gitlab-applet --token yourtokehere --project helloworld --giturl gitlab.com`
+`./gitlab-applet --token yourtokehere --project helloworld --giturl gitlab.com`
 
 ## Commands
 Commands follow the top level flag declarations. Each command may have arguments that are passed to it as well. 
