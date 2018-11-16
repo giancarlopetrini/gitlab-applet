@@ -21,6 +21,6 @@ gitlab-applet --token yourtokehere --project helloworld --giturl gitlab.com show
 ```
 
 Here's the current list of supported commands:
-* show - retrieves information from a project
-  * variables
+* `show` - retrieves information from a project
+  * `variables`
     * gets project level variables. Decodes if in base64 format (used at times if CI integrates with container deployments)
